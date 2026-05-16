@@ -48,7 +48,7 @@ const projects: Project[] = [
     title: "个人网站", tagline: "从零到一的 React 全栈实践",
     description: "使用 React 19 + TypeScript + Framer Motion 从零构建的个人品牌网站。通过 Vibe Coding 方式与 AI 协作完成，涵盖暗色主题、动画系统、响应式设计等完整功能。",
     image: "/images/个人网站.png", tags: ["React 19", "TypeScript", "Tailwind CSS v4", "Framer Motion"],
-    details: ["从零配置 Vite + React 19 开发环境", "实现暗色/亮色主题切换系统", "Framer Motion 动效与滚动驱动动画", "部署至 Vercel 自动 CI/CD"],
+    details: ["从零配置 Vite + React 19 开发环境", "实现暗色/亮色主题切换系统", "Framer Motion 动效与滚动驱动动画", "部署至 Netlify 自动 CI/CD"],
     role: "独立全栈开发", timeline: "2025.05", highlights: ["主题切换系统", "打字动画效果", "响应式布局"],
   },
   {
