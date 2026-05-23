@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
 import { OrbitalTimeline } from "@/components/OrbitalTimeline";
 import { CinematicFooter } from "@/components/ui/motion-footer";
+import LearnRoom from "@/components/LearnRoom";
 
 
 import {
@@ -156,6 +157,7 @@ function PersonalWebsite() {
             <a href="#features" className="text-sm font-medium transition-colors hover:text-primary">项目</a>
             <a href="#journey" className="text-sm font-medium transition-colors hover:text-primary">成长</a>
             <a href="#contact" className="text-sm font-medium transition-colors hover:text-primary">联系</a>
+            <a href="/learn" className="text-sm font-medium transition-colors hover:text-primary">AI学习室</a>
           </nav>
           <div className="hidden md:flex items-center gap-3">
             <motion.button whileHover={{ scale: 1.05, rotate: theme === 'dark' ? -15 : 15 }} whileTap={{ scale: 0.9 }}
@@ -176,7 +178,7 @@ function PersonalWebsite() {
             <button onClick={toggleMenu}><X className="h-6 w-6" /></button>
           </div>
           <motion.nav variants={stagger} initial="hidden" animate="visible" className="container grid gap-3 pb-8 pt-6">
-            {[{ n: "首页", h: "#hero" }, { n: "项目", h: "#features" }, { n: "成长", h: "#journey" }, { n: "联系", h: "#contact" }].map((item, i) => (
+            {[{ n: "首页", h: "#hero" }, { n: "项目", h: "#features" }, { n: "成长", h: "#journey" }, { n: "联系", h: "#contact" }, { n: "AI学习室", h: "/learn" }].map((item, i) => (
               <motion.div key={i} variants={itemIn}><a href={item.h} className="flex items-center justify-between rounded-full px-4 py-3 text-lg font-medium hover:bg-accent" onClick={toggleMenu}>{item.n}</a></motion.div>
             ))}
             <motion.div variants={itemIn} className="px-4 pt-4">
@@ -327,4 +329,9 @@ function PersonalWebsite() {
     </div>
   );
 }
-export default PersonalWebsite;
+export default function AppRouter() {
+  if (window.location.pathname === "/learn" || window.location.pathname === "/learn.html") {
+    return <LearnRoom />;
+  }
+  return <PersonalWebsite />;
+}
