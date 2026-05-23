@@ -1,6 +1,13 @@
 const DEEPSEEK_URL = "https://api.deepseek.com/v1/chat/completions";
 const TIMEOUT_MS = 30_000;
 const MAX_MESSAGES = 40;
+const ALLOWED_MODELS = new Set([
+  "deepseek-chat",
+  "deepseek-reasoner",
+  "deepseek-v4-flash",
+  "deepseek-v4-pro",
+]);
+const DEFAULT_MODEL = "deepseek-chat";
 
 exports.handler = async (event) => {
   if (event.httpMethod !== "POST") {
@@ -14,10 +21,12 @@ exports.handler = async (event) => {
     return { statusCode: 400, body: JSON.stringify({ error: "请求体格式无效，需要 JSON" }) };
   }
 
-  const { messages } = body;
+  const { messages, model: rawModel } = body;
   if (!Array.isArray(messages) || messages.length === 0) {
     return { statusCode: 400, body: JSON.stringify({ error: "messages 必须是非空数组" }) };
   }
+
+  const model = rawModel && ALLOWED_MODELS.has(rawModel) ? rawModel : DEFAULT_MODEL;
 
   const trimmed = messages.slice(-MAX_MESSAGES);
 
@@ -32,7 +41,7 @@ exports.handler = async (event) => {
         Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model,
         messages: [
           {
             role: "system",
