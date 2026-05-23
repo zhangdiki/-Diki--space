@@ -2,27 +2,30 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft, Send, Lightbulb, Brain, Sparkles, RotateCcw,
-  User, ChevronDown, Zap, Telescope,
+  User, ChevronDown, Zap, Telescope, Clock, Trash2, X, MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  type Message,
+  type Mode,
+  type ModelId,
+  type Conversation,
+  type ConversationMeta,
+  generateId,
+  listConversations,
+  getConversation,
+  saveConversation,
+  deleteConversation,
+  getCurrentId,
+  setCurrentId,
+} from "@/lib/storage";
 
-// ── Types ──
-type Message = { role: "user" | "assistant"; content: string };
-type Mode = "socratic" | "feynman" | null;
-type ModelId = "deepseek-chat" | "deepseek-reasoner" | "deepseek-v4-flash" | "deepseek-v4-pro";
-
-interface ModelOption {
-  id: ModelId;
-  label: string;
-  desc: string;
-  icon: React.ReactNode;
-}
-
-const MODELS: ModelOption[] = [
-  { id: "deepseek-chat", label: "V3 快速", desc: "响应最快，通用对话", icon: <Zap className="h-3.5 w-3.5" /> },
-  { id: "deepseek-reasoner", label: "R1 推理", desc: "深度思考，苏格拉底式更佳", icon: <Brain className="h-3.5 w-3.5" /> },
-  { id: "deepseek-v4-flash", label: "V4 极速", desc: "最新模型，百万上下文", icon: <Zap className="h-3.5 w-3.5" /> },
-  { id: "deepseek-v4-pro", label: "V4 Pro", desc: "旗舰模型，最强质量", icon: <Telescope className="h-3.5 w-3.5" /> },
+// ── Constants ──
+const MODELS = [
+  { id: "deepseek-chat" as const, label: "V3 快速", desc: "响应最快，通用对话", icon: <Zap className="h-3.5 w-3.5" /> },
+  { id: "deepseek-reasoner" as const, label: "R1 推理", desc: "深度思考，苏格拉底式更佳", icon: <Brain className="h-3.5 w-3.5" /> },
+  { id: "deepseek-v4-flash" as const, label: "V4 极速", desc: "最新模型，百万上下文", icon: <Zap className="h-3.5 w-3.5" /> },
+  { id: "deepseek-v4-pro" as const, label: "V4 Pro", desc: "旗舰模型，最强质量", icon: <Telescope className="h-3.5 w-3.5" /> },
 ];
 
 const MAX_ROUNDS = 15;
@@ -48,7 +51,23 @@ function getModelLabel(id: ModelId): string {
   return MODELS.find((m) => m.id === id)?.label ?? id;
 }
 
-// ── Model Selector Dropdown ──
+function buildTitle(material: string): string {
+  const clean = material.trim().replace(/\n/g, " ");
+  return clean.slice(0, 40) + (clean.length > 40 ? "…" : "") || "未命名对话";
+}
+
+function formatTime(ts: number): string {
+  const d = new Date(ts);
+  const now = new Date();
+  const diff = now.getTime() - d.getTime();
+  if (diff < 60_000) return "刚刚";
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} 分钟前`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)} 小时前`;
+  if (diff < 604_800_000) return `${Math.floor(diff / 86_400_000)} 天前`;
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+
+// ── Model Selector ──
 function ModelSelector({
   model,
   onSelect,
@@ -124,8 +143,188 @@ function ModelSelector({
   );
 }
 
+// ── History Sidebar ──
+function HistorySidebar({
+  open,
+  onClose,
+  currentId,
+  onLoad,
+}: {
+  open: boolean;
+  onClose: () => void;
+  currentId: string | null;
+  onLoad: (id: string) => void;
+}) {
+  const [list, setList] = useState<ConversationMeta[]>([]);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) setList(listConversations());
+  }, [open]);
+
+  const handleDelete = (id: string) => {
+    deleteConversation(id);
+    setList(listConversations());
+    setDeleteTarget(null);
+  };
+
+  const handleLoad = (id: string) => {
+    onLoad(id);
+    onClose();
+  };
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
+            onClick={onClose}
+          />
+
+          {/* Panel */}
+          <motion.aside
+            initial={{ x: "-100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "-100%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed left-0 top-0 bottom-0 z-50 w-80 max-w-[85vw] bg-background border-r border-border/30 flex flex-col shadow-2xl"
+          >
+            {/* Header */}
+            <div className="shrink-0 flex items-center justify-between px-4 h-14 border-b border-border/20">
+              <h2 className="text-sm font-semibold flex items-center gap-2">
+                <Clock className="h-4 w-4 text-muted-foreground" />
+                历史对话
+              </h2>
+              <button
+                onClick={onClose}
+                className="rounded-lg p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* New conversation */}
+            <div className="shrink-0 px-3 pt-3 pb-1">
+              <button
+                onClick={() => {
+                  setCurrentId("");
+                  onClose();
+                  window.location.reload();
+                }}
+                className="flex w-full items-center gap-2.5 rounded-xl border border-border/40 bg-card/60 px-4 py-3 text-sm font-medium text-foreground hover:border-primary/30 hover:bg-primary/5 transition-all"
+              >
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <MessageSquare className="h-4 w-4" />
+                </div>
+                新对话
+              </button>
+            </div>
+
+            {/* List */}
+            <div className="flex-1 overflow-y-auto px-3 py-2">
+              {list.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                  <MessageSquare className="h-10 w-10 mb-3 opacity-20" />
+                  <p className="text-sm">暂无历史对话</p>
+                  <p className="text-xs mt-1 opacity-60">开始学习后对话将自动保存</p>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  {list.map((c) => (
+                    <div
+                      key={c.id}
+                      className={cn(
+                        "group relative flex items-start gap-3 rounded-xl px-3 py-3 cursor-pointer transition-colors",
+                        c.id === currentId
+                          ? "bg-primary/6 border border-primary/15"
+                          : "hover:bg-muted/60 border border-transparent",
+                      )}
+                      onClick={() => handleLoad(c.id)}
+                    >
+                      <div
+                        className={cn(
+                          "mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
+                          c.mode === "socratic"
+                            ? "bg-primary/10 text-primary"
+                            : "bg-purple-500/10 text-purple-500",
+                        )}
+                      >
+                        {c.mode === "socratic" ? (
+                          <Sparkles className="h-4 w-4" />
+                        ) : (
+                          <Lightbulb className="h-4 w-4" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{c.title}</div>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-[11px] text-muted-foreground/70">
+                            {formatTime(c.updatedAt)}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground/50">
+                            {getModelLabel(c.model)}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground/50">
+                            {c.messageCount} 条消息
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Delete */}
+                      {deleteTarget === c.id ? (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(c.id);
+                            }}
+                            className="rounded-md bg-destructive px-2 py-1 text-[11px] text-white hover:opacity-90"
+                          >
+                            确认删除
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteTarget(null);
+                            }}
+                            className="rounded-md p-1 text-muted-foreground hover:text-foreground"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setDeleteTarget(c.id);
+                          }}
+                          className="shrink-0 rounded-md p-1.5 text-muted-foreground/30 hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-all"
+                          title="删除"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.aside>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
 // ── Main Component ──
 export default function LearnRoom() {
+  const [conversationId, setConversationId] = useState<string>("");
   const [material, setMaterial] = useState("");
   const [mode, setMode] = useState<Mode>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -133,21 +332,73 @@ export default function LearnRoom() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [model, setModel] = useState<ModelId>("deepseek-chat");
+  const [showHistory, setShowHistory] = useState(false);
 
   const chatRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll chat
+  const idRef = useRef(conversationId);
+  idRef.current = conversationId;
+
+  // ── Restore last session on mount ──
+  useEffect(() => {
+    const savedId = getCurrentId();
+    if (savedId) {
+      const conv = getConversation(savedId);
+      if (conv) {
+        setConversationId(conv.id);
+        setMaterial(conv.material);
+        setMode(conv.mode);
+        setMessages(conv.messages);
+        setModel(conv.model);
+        return;
+      }
+    }
+    // No saved session — start fresh
+    setConversationId(generateId());
+  }, []);
+
+  // ── Auto-scroll chat ──
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
   }, [messages, isLoading]);
 
-  // Auto-focus input
+  // ── Auto-focus input ──
   useEffect(() => {
     if (mode && !isLoading) inputRef.current?.focus();
   }, [mode, isLoading]);
+
+  // ── Save conversation helper ──
+  const save = useCallback(
+    (
+      cid: string,
+      mat: string,
+      m: Mode,
+      msgs: Message[],
+      mdl: ModelId,
+    ) => {
+      if (msgs.length <= 1) return; // don't save empty convos
+      const now = Date.now();
+      const existing = getConversation(cid);
+      const conv: Conversation = {
+        id: cid,
+        title: buildTitle(mat),
+        material: mat,
+        mode: m ?? "socratic",
+        model: mdl,
+        messages: msgs,
+        messageCount: msgs.filter((x) => x.role !== "user" || x.content.length < 200)
+          .length,
+        createdAt: existing?.createdAt ?? now,
+        updatedAt: now,
+      };
+      saveConversation(conv);
+      setCurrentId(cid);
+    },
+    [],
+  );
 
   // ── API call ──
   const callAI = useCallback(
@@ -180,10 +431,14 @@ export default function LearnRoom() {
         const aiText =
           data.choices?.[0]?.message?.content || JSON.stringify(data);
 
-        setMessages((prev) => [
-          ...prev,
+        const final: Message[] = [
+          ...updated,
           { role: "assistant", content: aiText },
-        ]);
+        ];
+        setMessages(final);
+
+        // Auto-save after AI response
+        save(idRef.current, material, mode, final, model);
       } catch (err: any) {
         const msg = err.message || "未知错误";
         setError(
@@ -197,7 +452,7 @@ export default function LearnRoom() {
         setIsLoading(false);
       }
     },
-    [model],
+    [model, material, mode, save],
   );
 
   // ── Start mode ──
@@ -232,15 +487,47 @@ export default function LearnRoom() {
   };
 
   const handleReset = () => {
+    // Save current before starting fresh
+    if (messages.length > 1) {
+      save(conversationId, material, mode, messages, model);
+    }
+    const newId = generateId();
+    setConversationId(newId);
     setMode(null);
     setMessages([]);
     setInput("");
     setError(null);
     setMaterial("");
+    setCurrentId(newId);
   };
 
   const handleSuggestion = (suggestion: string) => {
     setMaterial(suggestion);
+  };
+
+  const handleLoadConversation = (id: string) => {
+    // Save current first
+    if (messages.length > 1) {
+      save(conversationId, material, mode, messages, model);
+    }
+    const conv = getConversation(id);
+    if (!conv) return;
+    setConversationId(conv.id);
+    setMaterial(conv.material);
+    setMode(conv.mode);
+    setMessages(conv.messages);
+    setModel(conv.model);
+    setError(null);
+    setInput("");
+    setCurrentId(conv.id);
+  };
+
+  const handleModelChange = (m: ModelId) => {
+    setModel(m);
+    // Update saved conversation model
+    if (messages.length > 1) {
+      save(conversationId, material, mode, messages, m);
+    }
   };
 
   // ── Render ──
@@ -249,13 +536,22 @@ export default function LearnRoom() {
       {/* ═══════ HEADER ═══════ */}
       <header className="shrink-0 border-b border-border/30 bg-background/90 backdrop-blur-xl sticky top-0 z-40">
         <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
-          <a
-            href="/"
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg px-2 py-1 -ml-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="hidden sm:inline">返回首页</span>
-          </a>
+          <div className="flex items-center gap-2">
+            <a
+              href="/"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors rounded-lg px-2 py-1 -ml-2"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">返回首页</span>
+            </a>
+            <button
+              onClick={() => setShowHistory(true)}
+              className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+              title="历史对话"
+            >
+              <Clock className="h-4 w-4" />
+            </button>
+          </div>
 
           <div className="flex items-center gap-3">
             <span className="text-sm font-semibold tracking-tight flex items-center gap-1.5">
@@ -265,7 +561,7 @@ export default function LearnRoom() {
           </div>
 
           <div className="flex items-center gap-2">
-            <ModelSelector model={model} onSelect={setModel} />
+            <ModelSelector model={model} onSelect={handleModelChange} />
             <button
               onClick={handleReset}
               className="flex items-center gap-1 rounded-full border border-border/50 bg-card/60 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground hover:border-border transition-colors"
@@ -276,6 +572,14 @@ export default function LearnRoom() {
           </div>
         </div>
       </header>
+
+      {/* ═══════ HISTORY SIDEBAR ═══════ */}
+      <HistorySidebar
+        open={showHistory}
+        onClose={() => setShowHistory(false)}
+        currentId={conversationId}
+        onLoad={handleLoadConversation}
+      />
 
       {/* ═══════ MAIN ═══════ */}
       <div className="flex-1 overflow-hidden mx-auto w-full max-w-3xl px-4 flex flex-col">
@@ -432,7 +736,6 @@ export default function LearnRoom() {
                       msg.role === "user" ? "justify-end" : "justify-start",
                     )}
                   >
-                    {/* AI avatar */}
                     {msg.role === "assistant" && (
                       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 ring-1 ring-primary/10 mt-0.5">
                         <Sparkles className="h-3.5 w-3.5 text-primary" />
@@ -450,7 +753,6 @@ export default function LearnRoom() {
                       {msg.content}
                     </div>
 
-                    {/* User avatar */}
                     {msg.role === "user" && (
                       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted ring-1 ring-border/30 mt-0.5">
                         <User className="h-3.5 w-3.5 text-muted-foreground" />
