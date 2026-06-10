@@ -154,6 +154,7 @@ function PersonalWebsite() {
           </div>
           <nav className="hidden md:flex gap-6">
             <a href="#hero" className="text-sm font-medium transition-colors hover:text-primary">首页</a>
+            <a href="#about" className="text-sm font-medium transition-colors hover:text-primary">关于</a>
             <a href="#features" className="text-sm font-medium transition-colors hover:text-primary">项目</a>
             <a href="#journey" className="text-sm font-medium transition-colors hover:text-primary">成长</a>
             <a href="#contact" className="text-sm font-medium transition-colors hover:text-primary">联系</a>
@@ -178,7 +179,7 @@ function PersonalWebsite() {
             <button onClick={toggleMenu}><X className="h-6 w-6" /></button>
           </div>
           <motion.nav variants={stagger} initial="hidden" animate="visible" className="container grid gap-3 pb-8 pt-6">
-            {[{ n: "首页", h: "#hero" }, { n: "项目", h: "#features" }, { n: "成长", h: "#journey" }, { n: "联系", h: "#contact" }, { n: "AI学习室", h: "/learn" }].map((item, i) => (
+            {[{ n: "首页", h: "#hero" }, { n: "关于", h: "#about" }, { n: "项目", h: "#features" }, { n: "成长", h: "#journey" }, { n: "联系", h: "#contact" }, { n: "AI学习室", h: "/learn" }].map((item, i) => (
               <motion.div key={i} variants={itemIn}><a href={item.h} className="flex items-center justify-between rounded-full px-4 py-3 text-lg font-medium hover:bg-accent" onClick={toggleMenu}>{item.n}</a></motion.div>
             ))}
             <motion.div variants={itemIn} className="px-4 pt-4">
@@ -191,26 +192,117 @@ function PersonalWebsite() {
       )}</AnimatePresence>
 
       <main className="flex-1">
-        {/* ========== SCROLL DOWN COVER ========== */}
-        <section className="relative z-20 w-full min-h-screen bg-background flex flex-col items-center justify-center text-foreground">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_center,rgba(255,255,255,0.03)_0%,transparent_60%)] pointer-events-none" />
-          
-          <h1 className="text-4xl md:text-5xl font-light tracking-[0.2em] text-neutral-400 mb-8 uppercase text-center px-4">
-            Scroll down to reveal
-          </h1>
-          
-          <div className="w-[1px] h-32 bg-gradient-to-b from-neutral-400 to-transparent" />
+        {/* ========== HERO ========== */}
+        <section id="hero" className="relative z-20 w-full min-h-screen flex flex-col items-center justify-center text-foreground px-4">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.04)_0%,transparent_70%)] pointer-events-none" />
 
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
-            <span className="text-[10px] md:text-xs font-semibold tracking-[0.3em] text-neutral-500 uppercase">Scroll</span>
-            <svg className="w-4 h-4 text-neutral-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            className="text-center max-w-2xl"
+          >
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.2, duration: 0.6 }}
+              className="text-sm md:text-base text-muted-foreground mb-4 tracking-wide"
+            >
+              湘潭大学 · 人力资源管理
+            </motion.p>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.7 }}
+              className="text-5xl md:text-7xl font-bold tracking-tight mb-6"
+            >
+              万宏伟
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 0.7 }}
+              className="text-lg md:text-xl text-muted-foreground max-w-lg mx-auto leading-relaxed mb-10"
+            >
+              探索技术与人结合创造价值的更多可能
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.8, duration: 0.7 }}
+              className="flex flex-col sm:flex-row gap-3 justify-center"
+            >
+              <Button className="rounded-full px-8" onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}>
+                查看项目
+                <Rocket className="ml-2 h-4 w-4" />
+              </Button>
+              <Button variant="outline" className="rounded-full px-8" onClick={() => window.open('/万宏伟-人力资源.pdf', '_blank')}>
+                下载简历
+                <svg className="ml-2 h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                </svg>
+              </Button>
+            </motion.div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4, duration: 0.8 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          >
+            <span className="text-[10px] md:text-xs font-semibold tracking-[0.3em] text-muted-foreground/50 uppercase">Scroll</span>
+            <motion.svg
+              animate={{ y: [0, 6, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="w-4 h-4 text-muted-foreground/40"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          </div>
+            </motion.svg>
+          </motion.div>
         </section>
 
-        {/* ========== CINEMATIC FOOTER ========== */}
-        <CinematicFooter />
+        {/* ========== 过渡分隔 ========== */}
+        <div className="h-px bg-gradient-to-r from-transparent via-primary/30 via-secondary/30 to-transparent" />
+
+        {/* ========== ABOUT ========== */}
+        <section id="about" className="w-full py-20 md:py-28">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeIn}
+            className="container px-4 md:px-6 max-w-3xl"
+          >
+            <motion.div variants={itemIn} className="text-center mb-10">
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl">关于我</h2>
+            </motion.div>
+            <motion.div variants={stagger} className="grid gap-6 md:grid-cols-3 text-center">
+              {[
+                { icon: <GraduationCap className="h-6 w-6" />, title: "教育背景", desc: "湘潭大学人力资源管理专业，2026 年应届，聚焦 HR 数字化与 AI 应用方向" },
+                { icon: <Code className="h-6 w-6" />, title: "技术能力", desc: "React / TypeScript / Python / RPA / 深度学习，从零到一构建多个全栈项目" },
+                { icon: <Sparkles className="h-6 w-6" />, title: "做事方式", desc: "第一性原理思考，AI-native 工作流，用代码和自动化解决实际问题" },
+              ].map((item, i) => (
+                <motion.div
+                  key={i}
+                  variants={itemIn}
+                  whileHover={{ y: -4 }}
+                  className="rounded-2xl border border-border/40 bg-card/60 p-6 transition-all hover:border-primary/20"
+                >
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    {item.icon}
+                  </div>
+                  <h3 className="text-sm font-semibold mb-2">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </section>
 
         {/* ========== 过渡分隔 ========== */}
         <div className="h-px bg-gradient-to-r from-transparent via-primary/30 via-secondary/30 to-transparent" />
@@ -300,7 +392,7 @@ function PersonalWebsite() {
                 ))}
               </div>
               <div className="flex gap-3 pt-2">
-                <motion.a whileHover={{ y: -3, scale: 1.1 }} href="#" className="rounded-full border p-2.5 text-muted-foreground hover:text-foreground hover:border-primary transition-colors" aria-label="GitHub"><IconGitHub className="h-5 w-5" /></motion.a>
+                <motion.a whileHover={{ y: -3, scale: 1.1 }} href="https://github.com/zhangdiki" target="_blank" rel="noopener noreferrer" className="rounded-full border p-2.5 text-muted-foreground hover:text-foreground hover:border-primary transition-colors" aria-label="GitHub"><IconGitHub className="h-5 w-5" /></motion.a>
               </div>
             </motion.div>
             <motion.div initial={{ opacity: 0, x: 50 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}
@@ -323,9 +415,7 @@ function PersonalWebsite() {
         </section>
       </main>
 
-      <footer className="w-full border-t py-8 text-center text-sm text-muted-foreground">
-        &copy; {new Date().getFullYear()} 万宏伟
-      </footer>
+      <CinematicFooter />
     </div>
   );
 }
