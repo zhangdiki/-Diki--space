@@ -1,4 +1,3 @@
-"use client";
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/Button";
@@ -9,7 +8,7 @@ import LearnRoom from "@/components/LearnRoom";
 
 import {
   Menu, X, Mail, MapPin, Sparkles, Zap,
-  Code, Palette, Rocket, Sun, Moon,
+  Code, Rocket, Sun, Moon,
   AlertCircle, BookOpen, Brain,
   GraduationCap, Headphones, MessageSquare
 } from "lucide-react";
@@ -45,23 +44,15 @@ interface Project {
 }
 const projects: Project[] = [
   {
-    id: 1, icon: <Palette className="h-10 w-10 text-primary" />,
-    title: "个人网站", tagline: "从零到一的 React 全栈实践",
-    description: "使用 React 19 + TypeScript + Framer Motion 从零构建的个人品牌网站。通过 Vibe Coding 方式与 AI 协作完成，涵盖暗色主题、动画系统、响应式设计等完整功能。",
-    image: "/images/个人网站.png", tags: ["React 19", "TypeScript", "Tailwind CSS v4", "Framer Motion"],
-    details: ["从零配置 Vite + React 19 开发环境", "实现暗色/亮色主题切换系统", "Framer Motion 动效与滚动驱动动画", "部署至 Netlify 自动 CI/CD"],
-    role: "独立全栈开发", timeline: "2025.05", highlights: ["主题切换系统", "打字动画效果", "响应式布局"],
+    id: 1, icon: <Brain className="h-10 w-10 text-primary" />,
+    title: "AIHR 智能招聘助手", tagline: "AI 驱动的一站式招聘管理平台",
+    description: "专为 HR 设计的 AI 智能招聘助手，涵盖岗位管理、简历筛选、面试评估、AI 打分、人机对比等六大功能模块。采用暗色主题专业 UI，支持语音转录、AI 表单提取等智能交互。",
+    image: "/images/aihr.png", tags: ["HTML/CSS", "Vanilla JS", "AI 招聘", "UI 设计"],
+    details: ["6 大功能页面：工作台、岗位、简历、面试、AI 评估、人机对比", "Canvas 雷达图 + 动画计数器等纯手写可视化", "浏览器录音 + AI 转录/表单提取流水线", "暗色专业 UI 主题，CSS 变量 + 噪点纹理设计"],
+    role: "独立设计与开发", timeline: "2026.07", highlights: ["AI 智能评估", "语音面试转录", "人机打分对比"],
   },
   {
-    id: 2, icon: <Code className="h-10 w-10 text-primary" />,
-    title: "全自动求职助手（Demo）", tagline: "RPA 驱动的智能求职工具",
-    description: "基于 RPA 技术开发的自动化求职系统，能够自动扫描多平台招聘信息、解析岗位 JD、匹配个人技能并完成简历优化与投递。探索 AI + Automation 在实际场景中的应用。",
-    image: "/images/rpa.png", tags: ["RPA", "Python", "自动化", "Web Scraping"],
-    details: ["多平台招聘信息聚合与解析", "基于 JD 的智能简历匹配优化", "定时批量自动投递", "求职进度可视化追踪"],
-    role: "独立开发", timeline: "2025.04", highlights: ["RPA 自动流程", "JD 智能解析", "批量投递"],
-  },
-  {
-    id: 3, icon: <Rocket className="h-10 w-10 text-primary" />,
+    id: 2, icon: <Rocket className="h-10 w-10 text-primary" />,
     title: "水稻病虫害视觉识别", tagline: "深度学习驱动的农业 AI 应用",
     description: "基于 YOLOv8 和 Keras 的水稻病虫害检测系统，能够识别 5 种常见病害（白叶枯病、稻瘟病、稻曲病等）。从数据预处理到模型训练部署完整的深度学习 pipeline。",
     image: "/images/水稻病虫害视觉识别脚本.jpg", tags: ["YOLOv8", "Keras", "Python", "OpenCV"],
@@ -69,7 +60,7 @@ const projects: Project[] = [
     role: "模型训练与系统开发", timeline: "2025.03", highlights: ["YOLOv8 检测", "多分类识别", "端到端 Pipeline"],
   },
   {
-    id: 4, icon: <Headphones className="h-10 w-10 text-primary" />,
+    id: 3, icon: <Headphones className="h-10 w-10 text-primary" />,
     title: "Voice AI 语音助手", tagline: "语音交互 + AI 对话的智能助手",
     description: "AI 语音助手应用，支持语音输入（STT）+ AI 对话 + 语音播报（TTS），提供类通话和文字对话两种交互模式。接入 DeepSeek API 做容错理解，PWA 可安装到桌面。",
     image: "/images/voice-ai.png", tags: ["React 19", "Web Speech API", "Fish Audio TTS", "DeepSeek API", "PWA"],
@@ -77,20 +68,12 @@ const projects: Project[] = [
     role: "独立全栈开发", timeline: "2026.05", highlights: ["语音输入 STT", "AI 对话", "TTS 语音播报"],
   },
   {
-    id: 5, icon: <MessageSquare className="h-10 w-10 text-primary" />,
+    id: 4, icon: <MessageSquare className="h-10 w-10 text-primary" />,
     title: "CC Chat", tagline: "自定义 Claude Code 聊天前端",
     description: "自定义 Claude Code 聊天前端，接入 Anthropic API / DeepSeek 兼容端点。支持多会话管理、流式输出、本地 skill/command 生态集成，Express 5 后端驱动。",
     image: "/images/cc-chat.png", tags: ["React 19", "Express 5", "Anthropic SDK", "Tailwind CSS", "TypeScript"],
     details: ["多会话管理，新建/删除/重命名会话", "流式实时输出 AI 回复", "读取本地 .claude/ 下的 skill/command/agent 配置", "设置面板：API Key、Base URL、模型切换", "深色/浅色主题跟随系统"],
     role: "独立全栈开发", timeline: "2026.05", highlights: ["多会话管理", "流式输出", "Claude 生态集成"],
-  },
-  {
-    id: 6, icon: <Brain className="h-10 w-10 text-primary" />,
-    title: "AIHR 智能招聘助手", tagline: "AI 驱动的一站式招聘管理平台",
-    description: "专为 HR 设计的 AI 智能招聘助手，涵盖岗位管理、简历筛选、面试评估、AI 打分、人机对比等六大功能模块。采用暗色主题专业 UI，支持语音转录、AI 表单提取等智能交互。",
-    image: "/images/aihr.png", tags: ["HTML/CSS", "Vanilla JS", "AI 招聘", "UI 设计"],
-    details: ["6 大功能页面：工作台、岗位、简历、面试、AI 评估、人机对比", "Canvas 雷达图 + 动画计数器等纯手写可视化", "浏览器录音 + AI 转录/表单提取流水线", "暗色专业 UI 主题，CSS 变量 + 噪点纹理设计"],
-    role: "独立设计与开发", timeline: "2026.07", highlights: ["AI 智能评估", "语音面试转录", "人机打分对比"],
   },
 ];
 
@@ -286,7 +269,6 @@ function PersonalWebsite() {
           <OrbitalTimeline timelineData={timelineData} />
         </section>
 
-        {/* 渐变分隔线 */}
         {/* ========== CONTACT ========== */}
         <section id="contact" className="w-full py-16 md:py-28">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeIn}
