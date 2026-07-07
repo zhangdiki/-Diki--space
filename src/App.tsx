@@ -84,6 +84,14 @@ const projects: Project[] = [
     details: ["多会话管理，新建/删除/重命名会话", "流式实时输出 AI 回复", "读取本地 .claude/ 下的 skill/command/agent 配置", "设置面板：API Key、Base URL、模型切换", "深色/浅色主题跟随系统"],
     role: "独立全栈开发", timeline: "2026.05", highlights: ["多会话管理", "流式输出", "Claude 生态集成"],
   },
+  {
+    id: 6, icon: <Brain className="h-10 w-10 text-primary" />,
+    title: "AIHR 智能招聘助手", tagline: "AI 驱动的一站式招聘管理平台",
+    description: "专为 HR 设计的 AI 智能招聘助手，涵盖岗位管理、简历筛选、面试评估、AI 打分、人机对比等六大功能模块。采用暗色主题专业 UI，支持语音转录、AI 表单提取等智能交互。",
+    image: "/images/aihr.png", tags: ["HTML/CSS", "Vanilla JS", "AI 招聘", "UI 设计"],
+    details: ["6 大功能页面：工作台、岗位、简历、面试、AI 评估、人机对比", "Canvas 雷达图 + 动画计数器等纯手写可视化", "浏览器录音 + AI 转录/表单提取流水线", "暗色专业 UI 主题，CSS 变量 + 噪点纹理设计"],
+    role: "独立设计与开发", timeline: "2026.07", highlights: ["AI 智能评估", "语音面试转录", "人机打分对比"],
+  },
 ];
 
 // ========== Project Modal ==========
