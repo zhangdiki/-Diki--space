@@ -280,7 +280,7 @@ function PersonalWebsite() {
               <div className="mt-6 space-y-4">
                 {[
                   { icon: <MapPin className="h-5 w-5 text-primary" />, title: "位置", val: "中国 · 湘潭" },
-                  { icon: <Mail className="h-5 w-5 text-primary" />, title: "邮箱", val: "diki3153744382@163.com" },
+                  { icon: <Mail className="h-5 w-5 text-primary" />, title: "邮箱", val: "dikiwhw@163.com" },
                   { icon: <GraduationCap className="h-5 w-5 text-primary" />, title: "状态", val: "湘潭大学 · 人力资源管理 · 寻求 2026 暑期实习" },
                 ].map((item, i) => (
                   <motion.div key={i} whileHover={{ x: 5 }} className="flex items-start gap-3">
@@ -306,7 +306,7 @@ function PersonalWebsite() {
                 查看简历 PDF
               </Button>
               <p className="text-xs text-muted-foreground">
-                或直接发送邮件至 <a href="mailto:diki3153744382@163.com" className="text-primary hover:underline">diki3153744382@163.com</a>
+                或直接发送邮件至 <a href="mailto:dikiwhw@163.com" className="text-primary hover:underline">dikiwhw@163.com</a>
               </p>
             </motion.div>
           </motion.div>
